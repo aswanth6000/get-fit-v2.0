@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Pagination from '@mui/material/Pagination';
 import { Box, Stack, Typography } from '@mui/material';
 
@@ -10,6 +10,8 @@ const Exercises = ({ exercises, setExercises, bodyPart }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [exercisesPerPage] = useState(6);
 
+  const memoizedSetExercises = useCallback(setExercises, [setExercises]);
+
   useEffect(() => {
     const fetchExercisesData = async () => {
       let exercisesData = [];
@@ -20,11 +22,11 @@ const Exercises = ({ exercises, setExercises, bodyPart }) => {
         exercisesData = await fetchData(`https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}`, exerciseOptions);
       }
 
-      setExercises(exercisesData);
+      memoizedSetExercises(exercisesData);
     };
 
     fetchExercisesData();
-  }, [bodyPart]);
+  }, [bodyPart, memoizedSetExercises]);
 
   // Pagination
   const indexOfLastExercise = currentPage * exercisesPerPage;
@@ -37,7 +39,9 @@ const Exercises = ({ exercises, setExercises, bodyPart }) => {
     window.scrollTo({ top: 1800, behavior: 'smooth' });
   };
 
-  if (!currentExercises.length) return <Loader />;
+  if (!currentExercises.length) {
+    return <Loader />;
+  }
 
   return (
     <Box id="exercises" sx={{ mt: { lg: '109px' } }} mt="50px" p="20px">
